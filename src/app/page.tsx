@@ -2,33 +2,36 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsLoading(true);
 
-    try {
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+    const promise = fetch('/api/waitlist', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
 
-      if (response.ok) {
-        alert('Inscrição realizada com sucesso! Entraremos em contato.');
+    await toast.promise(promise, {
+      loading: 'Enviando...',
+      success: () => {
         setEmail('');
         setIsModalOpen(false);
-      } else {
-        alert('Ocorreu um erro. Tente novamente.');
-      }
-    } catch {
-      alert('Ocorreu um erro de conexão.');
-    }
+        return 'Inscrição realizada com sucesso! Entraremos em contato.';
+      },
+      error: (err) => `Erro: ${err.message || 'Não foi possível se inscrever.'}`,
+    });
+
+    setIsLoading(false);
   };
   return (
     <div className="relative flex flex-col min-h-screen bg-white">
@@ -216,9 +219,10 @@ export default function Home() {
               />
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={isLoading}
+                className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
               >
-                Quero meu acesso!
+                {isLoading ? 'Enviando...' : 'Quero meu acesso!'}
               </button>
             </form>
           </div>

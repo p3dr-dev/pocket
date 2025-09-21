@@ -3,6 +3,10 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export async function GET() {
+  return NextResponse.json({ message: 'API de waitlist funcionando!' }, { status: 200 });
+}
+
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
